@@ -1,15 +1,38 @@
 # Contributing
 
-Use Node.js 22 or newer and Conventional Commits (`feat:`, `fix:`, `docs:`, and similar).
+> [!NOTE]
+> Keep changes small, secure and focused on safe Ubuntu analysis and cleanup.
 
-Before opening a pull request, run:
+## Development
 
 ```bash
+git clone https://github.com/toscani-tenekeu/ubuntu-deep-cleaner.git
+cd ubuntu-deep-cleaner
 npm ci
+npm run build
+UDC_DEMO_MODE=1 UDC_STATE_DIR=/tmp/ubuntu-deep-cleaner-demo npm start
+```
+
+Open `http://127.0.0.1:8787`. Demo mode never executes privileged cleanup commands.
+
+## Before a pull request
+
+```bash
 npm run typecheck
 npm run lint
 npm test
 npm run build
 ```
 
-New cleanup actions must be a closed enum in the shared contract, implemented in the privileged agent, rediscovered server-side at execution time, and covered by tests. Never accept a shell command or arbitrary cleanup path from an HTTP request. Do not preselect findings.
+Use [Conventional Commits](https://www.conventionalcommits.org/):
+
+```text
+feat: add a read-only analyzer
+fix: validate a cleanup action
+docs: clarify installation
+```
+
+> [!WARNING]
+> Never accept arbitrary commands or paths from the browser, preselect cleanup findings, weaken localhost restrictions, or commit secrets and production data.
+>
+> Report vulnerabilities privately through [SECURITY.md](./SECURITY.md).

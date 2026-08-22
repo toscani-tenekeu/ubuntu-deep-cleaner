@@ -1,13 +1,26 @@
-# Security policy
+# Security
 
-## Supported versions
+> [!WARNING]
+> Ubuntu Deep Cleaner includes a privileged agent. Access to the web console should be treated as server-level access.
 
-Security fixes are applied to the latest published release.
+## Supported version
 
-## Reporting
+Only the latest stable release is supported. Install security updates promptly.
 
-Do not open a public issue for a vulnerability. Use GitHub's private vulnerability reporting for this repository. Include the affected version, reproduction steps, impact and any suggested mitigation.
+## Safe deployment
 
-## Deployment constraints
+- Keep the console bound to `127.0.0.1`.
+- Connect through an SSH tunnel.
+- Do not publish port `8787` directly on the Internet.
+- Review cleanup plans and keep backups of important data.
+- Verify release checksums before installation.
 
-Keep the console bound to localhost and access it through SSH forwarding. Do not add a public reverse proxy without authentication, TLS, strict network controls and a separate security review. Install only release artifacts whose SHA-256 checksum you verified.
+## Report a vulnerability
+
+Use GitHub's private vulnerability reporting or email:
+
+```text
+support@kmerhosting.com
+```
+
+Include the application version, Ubuntu version, impact and minimal reproduction steps. Do not open a public issue or send passwords, private keys, customer files or production databases.

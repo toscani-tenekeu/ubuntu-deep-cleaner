@@ -1,111 +1,84 @@
+<div align="center">
+
 # Ubuntu Deep Cleaner
 
-A localhost-only analysis and cleanup console for Ubuntu 22.04 and 24.04. It inventories reclaimable disk space, explains the evidence, and executes only actions explicitly selected and confirmed by the operator.
+**A local web console for analyzing and safely cleaning Ubuntu servers.**
 
-The interface is built with standards-based [Carbon Web Components](https://github.com/carbon-design-system/carbon-web-components). The backend is Node.js with no application framework and uses the built-in SQLite module for a local audit trail.
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-22+-339933?logo=nodedotjs&logoColor=white)
+![Lit](https://img.shields.io/badge/Lit-3-324FFF?logo=lit&logoColor=white)
+![Carbon](https://img.shields.io/badge/Carbon-Web%20Components-161616)
+![SQLite](https://img.shields.io/badge/SQLite-local-003B57?logo=sqlite&logoColor=white)
+![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?logo=ubuntu&logoColor=white)
+![CI](https://github.com/toscani-tenekeu/ubuntu-deep-cleaner/actions/workflows/ci.yml/badge.svg)
+![License](https://img.shields.io/badge/License-Apache--2.0-blue)
 
-## Safety model
+</div>
 
-- The web console listens only on `127.0.0.1:8787`.
-- A non-root API process talks to a separate root agent through a Unix socket.
-- The root agent accepts a fixed action enum; it never accepts commands or arbitrary paths from the browser.
-- Nothing is preselected. Cleanup requires a generated plan, its SHA-256 hash, a modal review, and an exact confirmation phrase.
-- Ordinary files and Nginx configurations are quarantined for seven days before expiry.
-- Active Docker containers and volumes are excluded. Large files, failed services, certificates, PM2 logs and broken links are review-only.
-- Mutating HTTP requests require same-origin metadata, JSON, an allowlisted Host and a CSRF token.
+### What is Ubuntu Deep Cleaner?
 
-This tool reduces operational mistakes; it cannot prove that every unused-looking artifact is safe to remove. Read the evidence before selecting any action.
+> Ubuntu Deep Cleaner scans packages, logs, containers, services and server configuration to identify reclaimable disk space.
+>
+> Nothing is selected automatically. Cleanup requires an explicit selection and confirmation. Sensitive files are quarantined for seven days when supported.
 
-## What it analyzes
-
-| Area | Analysis | Cleanup behavior |
-| --- | --- | --- |
-| APT | archive cache, simulated autoremove | `apt-get clean` or confirmed autoremove |
-| systemd | failed units | review only |
-| Journal | usage beyond a 100 MB target | `journalctl --vacuum-size=100M` |
-| Docker | unused images and build cache | containers and volumes excluded |
-| Snap | disabled revisions | removes exact disabled revisions |
-| Logs | rotated logs older than seven days | quarantine |
-| Nginx | files in `sites-available` without enabled links | high-risk quarantine |
-| Certbot | renewal lineages not referenced by Nginx | review only |
-| PM2 | log footprint above 50 MB | review only |
-| Filesystem | broken config links and files larger than 500 MB | review only |
-
-Deep scans can take several minutes on large servers. Scans are read-only.
-
-## Requirements
+### Requirements
 
 - Ubuntu 22.04 or 24.04
 - Node.js 22 or newer
-- npm
-- systemd for the packaged installation
+- npm and Git
+- root access for installation
 
-Docker, Snap, Nginx, Certbot and PM2 are optional; their analyzers simply return no finding when absent.
-
-## Development
+### Install
 
 ```bash
-npm ci
-npm run typecheck
-npm test
-npm run build
-UDC_DEMO_MODE=1 UDC_STATE_DIR=/tmp/ubuntu-deep-cleaner-demo npm start
-```
-
-Open `http://127.0.0.1:8787`. Demo mode simulates scans and cleanup and never invokes the privileged agent.
-
-## Install on Ubuntu
-
-Build from a trusted checkout or unpack a release artifact, verify its adjacent SHA-256 file, then run:
-
-```bash
+git clone --depth 1 https://github.com/toscani-tenekeu/ubuntu-deep-cleaner.git
+cd ubuntu-deep-cleaner
 npm ci
 npm run build
 sudo ./scripts/install.sh
 ```
 
-The installer creates:
+The installer creates two services:
 
-- `/opt/ubuntu-deep-cleaner/releases/<version>` and a `current` symlink;
-- the locked service account `ubuntu-deep-cleaner`;
-- `/var/lib/ubuntu-deep-cleaner` for SQLite audit data and quarantine;
-- two services and a daily quarantine expiry timer.
+- `ubuntu-deep-cleaner.service`: non-root local web console;
+- `ubuntu-deep-cleaner-agent.service`: privileged cleanup agent over a Unix socket.
 
-Check health:
+The application listens only on `127.0.0.1:8787`.
 
-```bash
-systemctl status ubuntu-deep-cleaner ubuntu-deep-cleaner-agent
-curl http://127.0.0.1:8787/api/v1/bootstrap
-```
-
-From another machine, use an SSH tunnel rather than exposing the port:
+### Connect from your computer
 
 ```bash
-ssh -L 8787:127.0.0.1:8787 user@server
+ssh -N -o ExitOnForwardFailure=yes -L 8787:127.0.0.1:8787 root@SERVER_IP
 ```
 
-Then browse to `http://127.0.0.1:8787` locally.
+Keep the SSH command running, then open:
 
-## Quarantine and rollback
+```text
+http://127.0.0.1:8787
+```
 
-Quarantined files retain their original absolute path in the local audit database. Restore an entry from the Quarantine page before its seven-day expiry. The daily timer permanently deletes only expired quarantine payloads.
+## Useful commands
 
-To uninstall services while retaining releases and audit data:
+```bash
+sudo systemctl status ubuntu-deep-cleaner.service ubuntu-deep-cleaner-agent.service --no-pager
+sudo systemctl restart ubuntu-deep-cleaner-agent.service ubuntu-deep-cleaner.service
+sudo journalctl -u ubuntu-deep-cleaner.service -u ubuntu-deep-cleaner-agent.service -f
+sudo systemctl list-timers ubuntu-deep-cleaner-quarantine.timer
+```
+
+Uninstall services while preserving quarantine and audit data:
 
 ```bash
 sudo ./scripts/uninstall.sh
 ```
 
-After manual review, remove all application data too:
+Permanently remove the application and its data:
 
 ```bash
 sudo ./scripts/uninstall.sh --purge
 ```
 
-## Release process
-
-Release Please maintains versions and changelog entries from Conventional Commits. The initial public release is `v0.1.0`; later releases increment semantically as `x.x.x`. The release workflow builds a tarball and SHA-256 checksum and attaches both to the GitHub release.
-
-## License
-
-Apache-2.0. See [LICENSE](LICENSE).
+> [!WARNING]
+> Ubuntu Deep Cleaner can remove packages, logs, Docker images and server configuration selected by the administrator.
+>
+> Keep the application bound to localhost, review every finding and maintain backups of important server data.
