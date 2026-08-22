@@ -1,6 +1,6 @@
 {
   "name": "ubuntu-deep-cleaner",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "A localhost-only Ubuntu analysis and cleanup console built with Carbon Web Components.",
   "type": "module",
