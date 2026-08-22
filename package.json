@@ -4,9 +4,6 @@
   "private": true,
   "description": "A localhost-only Ubuntu analysis and cleanup console built with Carbon Web Components.",
   "type": "module",
-  "imports": {
-    "#node-sqlite": "./dist/runtime/node-sqlite.mjs"
-  },
   "engines": {
     "node": ">=22.0.0"
   },
@@ -15,7 +12,7 @@
     "dev:api": "UDC_DEMO_MODE=1 tsx src/server/index.ts",
     "dev:agent": "UDC_AGENT_SOCKET=/tmp/ubuntu-deep-cleaner-agent.sock UDC_STATE_DIR=/tmp/ubuntu-deep-cleaner tsx src/agent/index.ts",
     "build:web": "vite build",
-    "build:server": "tsup src/server/index.ts --format esm --platform node --target node22 --out-dir dist/server --sourcemap --external '#node-sqlite' && install -Dm644 src/runtime/node-sqlite.mjs dist/runtime/node-sqlite.mjs",
+    "build:server": "tsup src/server/index.ts --format esm --platform node --target node22 --out-dir dist/server --sourcemap",
     "build:agent": "tsup src/agent/index.ts src/agent/purge.ts --format esm --platform node --target node22 --out-dir dist/agent --sourcemap",
     "build": "npm run build:web && npm run build:server && npm run build:agent",
     "typecheck": "tsc --noEmit",

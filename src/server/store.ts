@@ -1,10 +1,16 @@
 import { mkdirSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import path from 'node:path';
-import { DatabaseSync } from '#node-sqlite';
+import type * as NodeSqlite from 'node:sqlite';
 import type { CleanupPlan, Job, ScanResult } from '../shared/contracts.js';
 
+// createRequire keeps the node: protocol intact when tsup bundles the server.
+// A static import is rewritten to the unrelated package name "sqlite" by
+// current esbuild versions, while this native runtime lookup is preserved.
+const { DatabaseSync } = createRequire(import.meta.url)('node:sqlite') as typeof NodeSqlite;
+
 export class Store {
-  private readonly database: DatabaseSync;
+  private readonly database: NodeSqlite.DatabaseSync;
 
   constructor(stateRoot: string) {
     mkdirSync(stateRoot, { recursive: true, mode: 0o750 });
