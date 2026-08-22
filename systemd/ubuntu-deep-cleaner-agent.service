@@ -1,0 +1,37 @@
+[Unit]
+Description=Ubuntu Deep Cleaner privileged agent
+Documentation=https://github.com/toscani-tenekeu/ubuntu-deep-cleaner
+After=local-fs.target docker.service snapd.service
+
+[Service]
+Type=simple
+User=root
+Group=root
+RuntimeDirectory=ubuntu-deep-cleaner
+RuntimeDirectoryMode=0750
+StateDirectory=ubuntu-deep-cleaner
+StateDirectoryMode=0770
+Environment=NODE_ENV=production
+Environment=UDC_AGENT_SOCKET=/run/ubuntu-deep-cleaner/agent.sock
+Environment=UDC_AGENT_GROUP=ubuntu-deep-cleaner
+Environment=UDC_STATE_DIR=/var/lib/ubuntu-deep-cleaner
+ExecStart=/usr/bin/node /opt/ubuntu-deep-cleaner/current/dist/agent/index.js
+Restart=on-failure
+RestartSec=3
+UMask=0007
+NoNewPrivileges=yes
+PrivateDevices=no
+PrivateTmp=no
+ProtectClock=yes
+ProtectControlGroups=yes
+ProtectHostname=yes
+ProtectKernelLogs=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+
+[Install]
+WantedBy=multi-user.target

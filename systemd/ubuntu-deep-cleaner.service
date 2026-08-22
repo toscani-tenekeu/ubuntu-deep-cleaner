@@ -1,0 +1,42 @@
+[Unit]
+Description=Ubuntu Deep Cleaner local web console
+Documentation=https://github.com/toscani-tenekeu/ubuntu-deep-cleaner
+After=network.target ubuntu-deep-cleaner-agent.service
+Requires=ubuntu-deep-cleaner-agent.service
+
+[Service]
+Type=simple
+User=ubuntu-deep-cleaner
+Group=ubuntu-deep-cleaner
+StateDirectory=ubuntu-deep-cleaner
+StateDirectoryMode=0770
+Environment=NODE_ENV=production
+Environment=UDC_HOST=127.0.0.1
+Environment=UDC_PORT=8787
+Environment=UDC_AGENT_SOCKET=/run/ubuntu-deep-cleaner/agent.sock
+Environment=UDC_STATE_DIR=/var/lib/ubuntu-deep-cleaner
+Environment=UDC_WEB_ROOT=/opt/ubuntu-deep-cleaner/current/dist/web
+ExecStart=/usr/bin/node /opt/ubuntu-deep-cleaner/current/dist/server/index.js
+Restart=on-failure
+RestartSec=3
+UMask=0007
+NoNewPrivileges=yes
+PrivateDevices=yes
+PrivateTmp=yes
+ProtectClock=yes
+ProtectControlGroups=yes
+ProtectHome=yes
+ProtectHostname=yes
+ProtectKernelLogs=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+ProtectSystem=strict
+ReadWritePaths=/var/lib/ubuntu-deep-cleaner
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+
+[Install]
+WantedBy=multi-user.target
