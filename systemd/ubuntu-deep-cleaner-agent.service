@@ -6,7 +6,7 @@ After=local-fs.target docker.service snapd.service
 [Service]
 Type=simple
 User=root
-Group=root
+Group=ubuntu-deep-cleaner
 RuntimeDirectory=ubuntu-deep-cleaner
 RuntimeDirectoryMode=0750
 StateDirectory=ubuntu-deep-cleaner
